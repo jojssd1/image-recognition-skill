@@ -10,7 +10,9 @@ recognize_image.py —— 图像识别（非 OCR）
   python recognize_image.py <图片路径> [选项]
 
 选项:
-  --prompt TEXT    识别提示词（默认见 config.json / VISION_PROMPT）
+  --prompt TEXT    识别提示词（优先级最高，覆盖预设）
+  --prompt-key KEY  使用 config.json 中 prompts 预设的提示词模板，
+                   如 photo / animal / plant / food / scene / chart / document
   --api-base URL   API 基础地址，自动拼接 /v1/chat/completions
                    （默认: config.json 的 api_base 或环境变量 VISION_API_BASE）
   --model NAME     模型名；缺省时自动从 /v1/models 探测视觉模型
@@ -80,14 +82,19 @@ def resolve_settings(args) -> dict:
              or os.environ.get("VISION_MODEL")
              or cfg.get("model")
              or "")
+    prompts_cfg = cfg.get("prompts") or {}
+    preset_prompt = prompts_cfg.get(args.prompt_key) if args.prompt_key else None
     prompt = (args.prompt
+              or preset_prompt
               or os.environ.get("VISION_PROMPT")
               or cfg.get("prompt")
+              or prompts_cfg.get("default")
               or DEFAULT_PROMPT)
     return {
         "api_base": api_base.rstrip("/"),
         "model": model,
         "prompt": prompt,
+        "prompt_key": args.prompt_key,
         "max_size": args.max_size,
         "max_tokens": args.max_tokens,
         "timeout": args.timeout,
@@ -213,7 +220,7 @@ def call_vision_api(settings: dict, image_path: str):
             )
         print(f"[info] api={settings['api_base']} model={model} "
               f"原尺寸={dims[0]}x{dims[1]} 发送尺寸={dims[2]}x{dims[3]} "
-              f"耗时={elapsed:.1f}s", file=sys.stderr)
+              f"耗时={elapsed:.1f}s 提示词={'[' + settings['prompt_key'] + ']' if settings['prompt_key'] else '自定义'}", file=sys.stderr)
         return content
     finally:
         safe_remove(tmp)
@@ -223,7 +230,9 @@ def main():
     parser = argparse.ArgumentParser(
         description="图像识别（非 OCR）：调用本地视觉 API 输出 Markdown")
     parser.add_argument("image", help="图片路径")
-    parser.add_argument("--prompt", help="识别提示词")
+    parser.add_argument("--prompt", help="识别提示词（最高优先级）")
+    parser.add_argument("--prompt-key", choices=None,
+                        help="config.json 中 prompts 预设模板名，如 photo/animal/plant/food/scene/chart/document")
     parser.add_argument("--api-base", help="API 基础地址（自动拼接 /v1/chat/completions）")
     parser.add_argument("--model", help="模型名（缺省自动探测）")
     parser.add_argument("--max-size", type=int, default=1280, help="最长边上限（默认 1280）")

@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Skill runtime temp
+image-recognition/scripts/tmp/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Local
+.pull.log
+.gh_auth.log

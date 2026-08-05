@@ -50,6 +50,30 @@ agent_created: true
 "E:\ImageSkill\venv\Scripts\python.exe" recognize_image.py "C:\tmp\shot.png" --dry-run
 ```
 
+## 提示词模板（`--prompt-key`）
+
+`config.json` 内置了按场景优化的提示词模板，用 `--prompt-key` 一键选用（`--prompt` 优先级更高，可临时覆盖）：
+
+| key | 适用场景 | 示例 |
+|---|---|---|
+| `document`（默认） | 截图/文档/表格/界面 | `--prompt-key document` |
+| `photo` | 风景/照片的摄影分析 | `--prompt-key photo` |
+| `animal` | 动物物种识别 | `--prompt-key animal` |
+| `plant` | 植物识别 | `--prompt-key plant` |
+| `food` | 菜品识别 | `--prompt-key food` |
+| `scene` | 通用场景描述 | `--prompt-key scene` |
+| `chart` | 图表数据提取 | `--prompt-key chart` |
+
+```bash
+# 动物识别
+"E:\ImageSkill\venv\Scripts\python.exe" recognize_image.py "C:\tmp\whale.png" --prompt-key animal
+
+# 摄影分析
+"E:\ImageSkill\venv\Scripts\python.exe" recognize_image.py "C:\tmp\landscape.png" --prompt-key photo
+```
+
+> 💡 经验：结构化内容（截图/文档/表格）用默认模板即可；**自然照片（风景/动物）建议用 `photo`/`animal` 等专用模板**，否则 3b 小模型的输出会偏简略。若输出中出现 `![...](attachment://...)` 占位行，属小模型偶发瑕疵，忽略或删掉即可。
+
 ## 故障排查
 
 - **Connection refused / 超时**：本地视觉服务未启动。引导用户启动服务：Ollama 需运行 `ollama serve`（或打开应用）；LM Studio 需在 Server 页启用服务。

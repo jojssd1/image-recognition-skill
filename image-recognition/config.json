@@ -1,0 +1,7 @@
+{
+  "api_base": "http://127.0.0.1:11434",
+  "model": "qwen2.5vl:3b",
+  "prompt": "识别图片里所有信息，使用 markdown 输出全部内容，并保持排版的一致",
+  "max_size": 1280,
+  "max_tokens": 4096
+}
